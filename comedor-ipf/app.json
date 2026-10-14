@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "HelloWorld",
-    "slug": "expo-template-default",
+    "name": "comedor-ipf",
+    "slug": "comedor-ipf",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "helloworld",
+    "scheme": "comedoripf",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

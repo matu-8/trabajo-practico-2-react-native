@@ -35,6 +35,8 @@ Salidas de los `console.log`:
 
 Pila final de base a tope: `['Inicio', 'Productos']`
 
+Ejecucion verificable en `ejercicios/ejercicios.A2.A3.solucion.ts`.
+
 ### A3. Seguimiento de una cola
 Se sigue la cola paso a paso (de frente a final):
 
@@ -54,13 +56,73 @@ Salidas de los `console.log`:
 
 Cola final de frente a final: `['Caro', 'Dani']`
 
+Ejecucion verificable en `ejercicios/ejercicios.A2.A3.solucion.ts`.
+
 ### A4. Analisis de la Implementacion
 - El símbolo # (numeral) indica que un atributo es privado, dentro de una clase.
 - El problema con la utilizacion de shift() es que desplaza los elementos de una lista uno a uno, haciendo el costo de pocesamiento muy grande. De manera seria, las colas de gran volumen se manejan mediante listas enlazadas (elementos con referencias en memoria, punteros).
 - Para retirar un elemento de una pila, se ocupa el metodo pop(), y para las colas se utiliza el metodo shift(). No se pueden usar el mismo ya que en el caso de pop() saca el ultimo elemnto y lo devuelve, en cambio el shift() realiza lo mismo pero con el primer elemento.
 
 ### A5. Programacion: una cola eficiente
-> Consigna de programacion. Se resuelve junto con la Parte G, en `src/estructuras/Cola.tsx`, usando un campo privado con el indice del frente en lugar de `shift()`.
+Implementacion en `ejercicios/ejercicio.A5.solucion.ts`.
+
+> Nota: el archivo `ejercicios/ejercicio.A5.ts` (version propia) tiene un error logico: su `desencolar()` devuelve `this.#items[0]` pero nunca lo elimina, por eso llamarlo dos veces seguidas devuelve el mismo elemento. La implementacion de abajo es la que sigue la pista del enunciado.
+
+```ts
+class ColaEficiente<T> {
+  #items: (T | undefined)[] = [];
+  #indiceFrente = 0;
+
+  encolar(x: T): void {
+    this.#items.push(x);
+  }
+
+  desencolar(): T | undefined {
+    if (this.vacia) return undefined;
+
+    const elemento = this.#items[this.#indiceFrente];
+    this.#items[this.#indiceFrente] = undefined; // se libera la posicion
+    this.#indiceFrente++;
+
+    // Si ya no queda nada, se reinicia para que el array no crezca siempre
+    if (this.vacia) {
+      this.#items = [];
+      this.#indiceFrente = 0;
+    }
+
+    return elemento;
+  }
+
+  frente(): T | undefined {
+    return this.#items[this.#indiceFrente];
+  }
+
+  get vacia(): boolean {
+    return this.#indiceFrente >= this.#items.length;
+  }
+
+  get tamanio(): number {
+    return this.#items.length - this.#indiceFrente;
+  }
+}
+```
+
+Como funciona:
+- `#indiceFrente` guarda la posicion del primer elemento valido. En vez de mover los datos para "cerrar el hueco" del frente, solo se avanza el indice. Por eso `desencolar()` es **O(1)**.
+- `#items` se declara como `(T | undefined)[]` y se asigna `undefined` en la posicion que se libera, para que el garbage collector pueda recolectar ese elemento. Si se dejara el valor, la memoria quedaria retenida.
+- `vacia` y `tamanio` se calculan comparando el indice con el largo del array, porque el array puede contener posiciones ya liberadas.
+- El reinicio cuando la cola se vacia es indispensable: sin el, el array seguiria creciendo en cada ciclo y la memoria se acumularia para siempre.
+
+Comparacion de complejidad:
+
+| Operacion | Con `shift()` | Con indice del frente |
+|---|---|---|
+| `encolar(x)` | O(1) | O(1) |
+| `desencolar()` | **O(n)** | **O(1)** |
+| `frente()` | O(1) | O(1) |
+| Vacular una cola de N elementos | **O(n²)** | **O(n)** |
+
+Medido en el ejercicio con 200.000 elementos: `shift()` tarda ~9.400 ms y la version con indice ~3 ms (unas 2.700 veces mas rapida). La razon es que `shift()` tiene que desplazar todos los elementos restantes para cerrar el hueco, y eso se repite en cada desencolar.
 
 ### A6. Pila y cola dentro de Expo Router
 a) Al Stack lo describe la estructura de un array de pantallas, de las cuales es visible la ultima pantalla, el tope. La accion que realiza el retroceso de pantalla es 'pop'.
@@ -170,7 +232,68 @@ Es navegacion post-logica. Si se usara `push('/')`, el login quedaria en la pila
 `dismissTo` descarta en un solo paso todas las pantallas intermedias. Con `back()` habria que presionar tres veces.
 
 ### C4. Escribí el código
-> Consigna de programacion. Se resuelve en la Parte G, usando `href` como objeto en `<Link>` y `StyleSheet.flatten()` para que el `<Pressable>` funcione con `asChild`.
+Codigo completo en `ejercicios/ejercicio.C4.tsx`.
+
+**a) Un `<Link>` que abra el producto con id 8 usando href como objeto**
+
+```tsx
+<Link
+  href={{
+    pathname: '/productos/[id]',
+    params: { id: '8' },
+  }}
+>
+  Ver el producto 8
+</Link>
+```
+
+El `href` acepta un string o un objeto. Cuando la ruta es dinamica se usa la forma objeto: `pathname` lleva la ruta **con los corchetes** (no con el valor puesto) y `params` lleva los valores. El valor viaja como texto porque en la URL todo es texto.
+
+**b) Un `<Link>` a /perfil que siempre apile, aunque la pantalla ya exista**
+
+```tsx
+<Link push href="/perfil">
+  Ir a mi perfil
+</Link>
+```
+
+Por defecto `<Link>` navega con `navigate`: si `/perfil` ya esta en la pila, vuelve a esa instancia en vez de duplicarla. La prop `push` fuerza el `router.push`, que apila siempre una pantalla nueva.
+
+**c) Un botón (Pressable) propio que funcione como link a /carrito usando asChild**
+
+```tsx
+<Link href="/carrito" asChild>
+  <Pressable
+    style={StyleSheet.flatten([estilos.boton, activo && estilos.botonActivo])}
+  >
+    <Text style={estilos.textoBoton}>Ir al carrito</Text>
+  </Pressable>
+</Link>
+```
+
+Con `asChild` el `<Link>` no renderiza su propio `<Text>`: le reenvia sus props (`onPress`, `href`, `role`) al primer hijo, que por eso debe aceptar `onPress`. Asi el `<Pressable>` se convierte en el link.
+
+El `StyleSheet.flatten()` no es opcional: con `asChild` el hijo lo recibe un `<Slot>`, y `<Slot>` no acepta un array de estilos (error "You are passing an array of styles to a child of `<Slot>`", visto en F5a). `flatten` convierte el array en un objeto plano.
+
+Este patron se puede extraer a un componente reutilizable, para no repetir el `Pressable` en cada link de la app:
+
+```tsx
+export function BotonLink({ href, children, activo = false }: {
+  href: { pathname: string };
+  children: string;
+  activo?: boolean;
+}) {
+  return (
+    <Link href={href} asChild>
+      <Pressable
+        style={StyleSheet.flatten([estilos.boton, activo && estilos.botonActivo])}
+      >
+        <Text style={estilos.textoBoton}>{children}</Text>
+      </Pressable>
+    </Link>
+  );
+}
+```
 
 ### C5. Pensar
 En la web cada `<Link>` se convierte en un `<a href>` real, con la URL visible en la barra de direcciones. Eso le da al usuario ventajas concretas: puede copiar la URL, compartirla, abrirla en otra pestaña, guardarla en marcadores y usar el boton de "atras" del navegador.
@@ -271,7 +394,16 @@ if (!producto) return <Text>No existe el producto {id}</Text>;
 return <Text>{producto.nombre}</Text>;
 ```
 
-Conviene validar tambien que el valor sea numerico (`Number.isNaN(idNumero)`) antes de buscar, para que una URL como `/productos/abc` no rompa nada.
+Conviene validar tambien que el valor sea numerico antes de buscar, para que una URL como `/productos/abc` no rompa nada:
+
+```tsx
+const idNumero = Number(id);
+if (Number.isNaN(idNumero)) return <Text>El id no es valido</Text>;
+```
+
+Ejecucion en `ejercicios/ejercicio.E1.ts`.
+
+Un detalle importante: **este error lo detecta el propio TypeScript**. Al escribir las comparaciones del enunciado, el compilador las marca con `TS2367` ("This comparison appears to be unintentional because the types 'number' and 'string' have no overlap"). Si el editor no lo habia detectado, ese aviso es justamente la pista de por que el codigo esta mal.
 
 ### E2. Catch-all
 Con `src/app/docs/[...slug].tsx`:

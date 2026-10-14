@@ -81,3 +81,28 @@ comedor-ipf/
 | `/ayuda/...` | `src/app/ayuda/[...slug].tsx` |
 | `/pedido` | `src/app/pedido.tsx` |
 | cualquier otra | `src/app/+not-found.tsx` |
+
+## Navegador de cada `_layout`
+
+| Archivo | Navegador | Notas |
+|---|---|---|
+| `src/app/_layout.tsx` | Stack raíz | `GestureHandlerRootView`, `AppProvider`, `Stack.Protected` para `cocina` (con sesión) y `login` (sin sesión), `unstable_settings.anchor = "(tabs)"` |
+| `src/app/(tabs)/_layout.tsx` | Tabs (`expo-router/js-tabs`) | Inicio, Menú, Carrito con badge de cantidad |
+| `src/app/(tabs)/menu/_layout.tsx` | Stack | Detalle de plato dentro de la pestaña (la barra sigue visible) |
+| `src/app/(tabs)/carrito/_layout.tsx` | Stack | Nota para cocina dentro de la pestaña |
+| `src/app/cocina/_layout.tsx` | Drawer (`expo-router/drawer`) | Pedidos en cola y atendidos |
+
+## Flujo de confirmación: `replace` y no `push`
+
+Desde `/carrito` el usuario toca **Confirmar pedido** (`<Link>`, porque es un toque). En `/confirmar`, el botón **Confirmar** ejecuta la lógica (asignar número, encolar) y luego llama a `router.replace('/turno/[numero]')`.
+
+Se usa `replace` porque la confirmación no debe quedar en la pila: con `push`, "atrás" en `/turno` volvería al formulario y permitiría confirmar el mismo pedido dos veces.
+
+## Deep link de prueba
+
+Abre el plato 7 directamente:
+
+- Build propia: `comedoripf://menu/7`
+- Expo Go: `exp://<IP_DE_LA_PC>:8081/--/menu/7`
+
+Un link inexistente (`comedoripf://no-existe`) muestra la pantalla 404.

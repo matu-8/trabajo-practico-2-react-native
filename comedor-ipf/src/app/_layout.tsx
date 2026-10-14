@@ -1,18 +1,52 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { estiloCabecera } from '@/constants/colores';
+import { AppProvider, useApp } from '@/context/AppContext';
 
-SplashScreen.preventAutoHideAsync();
+// Si se abre un deep link en frío (por ejemplo /categorias/bebidas),
+// (tabs) queda debajo en la pila y "atrás" vuelve a la app.
+export const unstable_settings = {
+  anchor: '(tabs)',
+};
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function LayoutRaiz() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppProvider>
+        <NavegacionRaiz />
+      </AppProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+function NavegacionRaiz() {
+  const { usuario } = useApp();
+  const conSesion = usuario !== null;
+
+  return (
+    <Stack screenOptions={{ ...estiloCabecera, headerBackButtonDisplayMode: 'minimal' }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="categorias/[categoria]" options={{ title: 'Categoría' }} />
+      <Stack.Screen name="buscar" options={{ title: 'Buscar' }} />
+      <Stack.Screen name="turno/[numero]" options={{ title: 'Tu turno' }} />
+      <Stack.Screen
+        name="confirmar"
+        options={{ title: 'Confirmar pedido', presentation: 'modal' }}
+      />
+
+      {/* Solo existen con sesión iniciada */}
+      <Stack.Protected guard={conSesion}>
+        <Stack.Screen name="cocina" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      {/* Solo existe sin sesión: al iniciarla, el modal se cierra solo */}
+      <Stack.Protected guard={!conSesion}>
+        <Stack.Screen
+          name="login"
+          options={{ title: 'Personal de cocina', presentation: 'modal' }}
+        />
+      </Stack.Protected>
+    </Stack>
   );
 }
