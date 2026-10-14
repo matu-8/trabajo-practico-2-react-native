@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Expo / Metro
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Builds nativos
+ios/
+android/
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Cache de herramientas
+.eslintcache
+*.tsbuildinfo
+
+# Sistema operativo / editores
+.DS_Store
+*.swp
+.idea/
+.vscode/
