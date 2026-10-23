@@ -1,4 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { estiloCabecera } from '@/constants/colores';
@@ -11,6 +13,9 @@ export const unstable_settings = {
 };
 
 export default function LayoutRaiz() {
+  const [fontsCargadas] = useFonts(Ionicons.font);
+  if (!fontsCargadas) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>

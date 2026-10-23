@@ -26,7 +26,7 @@ export default function DondeEstoy() {
 const estilos = StyleSheet.create({
   caja: {
     marginTop: 24,
-    padding: 12,
+    padding: 13,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colores.muted,

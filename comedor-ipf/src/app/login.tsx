@@ -75,6 +75,9 @@ const estilos = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     color: colores.tinta,
+    width: '100%',
+     maxWidth: 500,      // ancho máximo deseado
+     alignSelf: 'center',
   },
   error: { color: colores.primarioOscuro, fontWeight: '600' },
   botonIngresar: {
@@ -82,6 +85,9 @@ const estilos = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
+    width: "100%",
+    maxWidth: 500,
+    alignSelf:"center"
   },
   botonSecundario: {
     borderWidth: 1,
@@ -89,6 +95,9 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
+    width: "100%",
+    maxWidth: 500,
+    alignSelf:"center"
   },
   textoBoton: { color: colores.blanco, fontSize: 16, fontWeight: '700' },
   textoBotonSecundario: { color: colores.tinta, fontSize: 15, fontWeight: '600' },
